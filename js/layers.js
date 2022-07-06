@@ -133,108 +133,108 @@ addLayer('c', {
         if (getBuyableAmount('c', 61).gt(0)) player.c.timeTeal = player.c.timeTeal.add(speed.div(72));
         else player.c.timeTeal = new Decimal(0);
     },
-    tabFormat: [
-        ['display-text',
-            function() {
-                return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
-            }],
-        'blank',
-        ['row', [
-            ['display-text',
-                function() {
-                    return '<b class="sidetext" style="color:red">RED';
+    tabFormat: {
+        "Colors": {
+            content: [
+                ['display-text', function() {
+                    return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
                 }],
-            ['bar', 'redProg'],
-            'blank',
-            ['bar', 'redBar'],
-            ['blank', ['6.5px', '1px']],
-            ['column', [
-                ['bar', 'redBuy'],
-                ['blank', '2px'],
-                ['buyables', '1'],
-            ]],
-        ]],
-        'blank',
-        ['row', [
-            ['display-text',
-                function() {
-                    return '<b class="sidetext" style="color:#ff8800">ORANGE';
+                'blank',
+                ['row', [
+                    ['display-text', '<b class="sidetext" style="color:red">RED'],
+                    ['bar', 'redProg'],
+                    'blank',
+                    ['bar', 'redBar'],
+                    ['blank', ['6.5px', '1px']],
+                    ['column', [
+                        ['bar', 'redBuy'],
+                        ['blank', '2px'],
+                        ['buyables', '1'],
+                    ]],
+                ]],
+                'blank',
+                ['row', [
+                    ['display-text', '<b class="sidetext" style="color:#ff8800">ORANGE'],
+                    ['bar', 'orangeProg'],
+                    'blank',
+                    ['bar', 'orangeBar'],
+                    ['blank', ['6.5px', '1px']],
+                    ['column', [
+                        ['bar', 'orangeBuy'],
+                        ['blank', '2px'],
+                        ['buyables', '2'],
+                    ]],
+                ]],
+                'blank',
+                ['row', [
+                    ['display-text', function() {
+                        if (player.c.colors >= 2) return '<b class="sidetext" style="color:yellow">YELLOW';
+                    }],
+                    ['bar', 'yellowProg'],
+                    'blank',
+                    ['bar', 'yellowBar'],
+                    ['blank', ['6.5px', '1px']],
+                    ['column', [
+                        ['bar', 'yellowBuy'],
+                        ['blank', '2px'],
+                        ['buyables', '3'],
+                    ]],
+                ]],
+                'blank',
+                ['row', [
+                    ['display-text', function() {
+                        if (player.c.colors >= 3) return '<b class="sidetext" style="color:#99dd00">SLIME';
+                    }],
+                    ['bar', 'slimeProg'],
+                    'blank',
+                    ['bar', 'slimeBar'],
+                    ['blank', ['6.5px', '1px']],
+                    ['column', [
+                        ['bar', 'slimeBuy'],
+                        ['blank', '2px'],
+                        ['buyables', '4'],
+                    ]],
+                ]],
+                'blank',
+                ['row', [
+                    ['display-text', function() {
+                        if (player.c.colors >= 4) return '<b class="sidetext" style="color:lime">LIME';
+                    }],
+                    ['bar', 'limeProg'],
+                    'blank',
+                    ['bar', 'limeBar'],
+                    ['blank', ['6.5px', '1px']],
+                    ['column', [
+                        ['bar', 'limeBuy'],
+                        ['blank', '2px'],
+                        ['buyables', '5'],
+                    ]],
+                ]],
+                'blank',
+                ['row', [
+                    ['display-text', function() {
+                        if (player.c.colors >= 5) return '<b class="sidetext" style="color:#00ff88">TEAL';
+                    }],
+                    ['bar', 'tealProg'],
+                    'blank',
+                    ['bar', 'tealBar'],
+                    ['blank', ['6.5px', '1px']],
+                    ['column', [
+                        ['bar', 'tealBuy'],
+                        ['blank', '2px'],
+                        ['buyables', '6'],
+                    ]],
+                ]],
+            ],
+        },
+        "Upgrades": {
+            content: [
+                ['display-text', function() {
+                    return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
                 }],
-            ['bar', 'orangeProg'],
-            'blank',
-            ['bar', 'orangeBar'],
-            ['blank', ['6.5px', '1px']],
-            ['column', [
-                ['bar', 'orangeBuy'],
-                ['blank', '2px'],
-                ['buyables', '2'],
-            ]],
-        ]],
-        'blank',
-        ['row', [
-            ['display-text',
-                function() {
-                    if (player.c.colors >= 2) return '<b class="sidetext" style="color:yellow">YELLOW';
-                }],
-            ['bar', 'yellowProg'],
-            'blank',
-            ['bar', 'yellowBar'],
-            ['blank', ['6.5px', '1px']],
-            ['column', [
-                ['bar', 'yellowBuy'],
-                ['blank', '2px'],
-                ['buyables', '3'],
-            ]],
-        ]],
-        'blank',
-        ['row', [
-            ['display-text',
-                function() {
-                    if (player.c.colors >= 3) return '<b class="sidetext" style="color:#99dd00">SLIME';
-                }],
-            ['bar', 'slimeProg'],
-            'blank',
-            ['bar', 'slimeBar'],
-            ['blank', ['6.5px', '1px']],
-            ['column', [
-                ['bar', 'slimeBuy'],
-                ['blank', '2px'],
-                ['buyables', '4'],
-            ]],
-        ]],
-        'blank',
-        ['row', [
-            ['display-text',
-                function() {
-                    if (player.c.colors >= 4) return '<b class="sidetext" style="color:lime">LIME';
-                }],
-            ['bar', 'limeProg'],
-            'blank',
-            ['bar', 'limeBar'],
-            ['blank', ['6.5px', '1px']],
-            ['column', [
-                ['bar', 'limeBuy'],
-                ['blank', '2px'],
-                ['buyables', '5'],
-            ]],
-        ]],
-        'blank',
-        ['row', [
-            ['display-text',
-                function() {
-                    if (player.c.colors >= 5) return '<b class="sidetext" style="color:#00ff88">TEAL';
-                }],
-            ['bar', 'tealProg'],
-            'blank',
-            ['bar', 'tealBar'],
-            ['blank', ['6.5px', '1px']],
-            ['column', [
-                ['bar', 'tealBuy'],
-                ['blank', '2px'],
-                ['buyables', '6'],
-            ]],
-        ]],
-    ],
+            ],
+        },
+    },
     bars: {
         redBar: {
             direction: RIGHT,
