@@ -134,12 +134,12 @@ addLayer('c', {
         else player.c.timeTeal = new Decimal(0);
     },
     tabFormat: {
-        "Colors": {
+        'Colors': {
             content: [
                 ['display-text', function() {
                     return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
                 }],
-                'blank', ['row', [
+                'clickables', ['row', [
                     ['display-text', '<b class="sidetext" style="color:red">RED'],
                     ['bar', 'redProg'],
                     'blank',
@@ -216,12 +216,17 @@ addLayer('c', {
             ],
             buttonStyle: {'background':'var(--rainbowline)','background-size':'200%','animation':'3s linear infinite rainbowline, 6s linear infinite rainbowfade, 6s linear -3s infinite rainbowglow','border':'0px'},
         },
-        "Upgrades": {
+        'Upgrades': {
             content: [
                 ['display-text', function() {
                     return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
                 }],
-                'upgrades'
+                'blank',
+                ['display-text', '<h2>Bulk Buying'],
+                'blank',
+                'h-line',
+                'blank',
+                ['upgrades', '1'],
             ],
             buttonStyle: {'background':'var(--rainbowline)','background-size':'200%','animation':'3s linear infinite rainbowline, 6s linear infinite rainbowfade, 6s linear -3s infinite rainbowglow','border':'0px'},
         },
@@ -560,15 +565,15 @@ addLayer('c', {
     buyables: {
         11: {
             cost() {
-                x = getBuyableAmount('c', 11).add(1);
-                divnum = new Decimal(1);
+                let x = getBuyableAmount('c', 11).add(1);
+                let divnum = new Decimal(1);
                 if (getGridData('r', 302) != 0) divnum = divnum.mul(getGridData('r', 302));
                 return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
             },
             canAfford() {
                 return player.points.gte(this.cost()) && getBuyableAmount('c', this.id).lt(this.purchaseLimit);
             },
-            purchaseLimit: 1000,
+            purchaseLimit: 999,
             buy() {
                 player.points = player.points.sub(this.cost());
                 setBuyableAmount('c', this.id, getBuyableAmount('c', this.id).add(1));
@@ -580,8 +585,8 @@ addLayer('c', {
         },
         21: {
             cost() {
-                x = getBuyableAmount('c', 21).add(32);
-                divnum = new Decimal(1);
+                let x = getBuyableAmount('c', 21).add(32);
+                let divnum = new Decimal(1);
                 if (getGridData('r', 303) != 0) divnum = divnum.mul(getGridData('r', 303));
                 return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
             },
@@ -601,8 +606,8 @@ addLayer('c', {
         },
         31: {
             cost() {
-                x = getBuyableAmount('c', 31).add(64);
-                divnum = new Decimal(1);
+                let x = getBuyableAmount('c', 31).add(64);
+                let divnum = new Decimal(1);
                 if (getGridData('r', 304) != 0) divnum = divnum.mul(getGridData('r', 304));
                 return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
             },
@@ -625,8 +630,8 @@ addLayer('c', {
         },
         41: {
             cost() {
-                x = getBuyableAmount('c', 41).add(96);
-                divnum = new Decimal(1);
+                let x = getBuyableAmount('c', 41).add(96);
+                let divnum = new Decimal(1);
                 if (getGridData('r', 305) != 0) divnum = divnum.mul(getGridData('r', 305));
                 return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
             },
@@ -649,8 +654,8 @@ addLayer('c', {
         },
         51: {
             cost() {
-                x = getBuyableAmount('c', 51).add(128);
-                divnum = new Decimal(1);
+                let x = getBuyableAmount('c', 51).add(128);
+                let divnum = new Decimal(1);
                 if (getGridData('r', 306) != 0) divnum = divnum.mul(getGridData('r', 306));
                 return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
             },
@@ -673,8 +678,8 @@ addLayer('c', {
         },
         61: {
             cost() {
-                x = getBuyableAmount('c', this.id).add(160);
-                divnum = new Decimal(1);
+                let x = getBuyableAmount('c', this.id).add(160);
+                let divnum = new Decimal(1);
                 if (getGridData('r', 307) != 0) divnum = divnum.mul(getGridData('r', 307));
                 return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
             },
@@ -693,6 +698,47 @@ addLayer('c', {
             style: {'background-color':'#aaaaaa','border-radius':'0%','height':'25px','width':'180px'},
             unlocked() {
                 if (player.c.colors >= 5) return true;
+            },
+        },
+    },
+    clickables: {
+        11: {
+            display() {
+                if (!getClickableState('c', 11)) return '<h2>Buy 1x';
+                return '<h2>' + getClickableState('c', 11);
+            },
+            style: {'min-height':'40px','border-radius':'20px'},
+            canClick() {
+                return true;
+            },
+            onClick() {
+                if (!getClickableState('c', 11)) {
+                    setClickableState('c', 11, 'Buy 1x');
+                };
+                if (getClickableState('c', 11) == 'Buy 1x') {
+                    setClickableState('c', 11, 'Buy 10x');
+                } else if (getClickableState('c', 11) == 'Buy 10x') {
+                    setClickableState('c', 11, 'Buy 1x');
+                };
+            },
+            unlocked() {
+                return hasUpgrade('c', 11);
+            },
+        },
+    },
+    upgrades: {
+        11: {
+            fullDisplay() {
+                return '<h3>Bulk 10x</h3><br>unlocks the buy 10x option (which doesn\'t work yet)<br><br>Cost: ' + illionFormat(1000000);
+            },
+            canAfford() {
+                return player.points.gte(1000000);
+            },
+            pay() {
+                player.points = player.points.sub(1000000);
+            },
+            style() {
+                if (this.canAfford() && !hasUpgrade('c', 11)) return {'background':'var(--rainbowline)','background-size':'200%','animation':'3s linear infinite rainbowline'};
             },
         },
     },
