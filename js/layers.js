@@ -139,8 +139,7 @@ addLayer('c', {
                 ['display-text', function() {
                     return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
                 }],
-                'blank',
-                ['row', [
+                'blank', ['row', [
                     ['display-text', '<b class="sidetext" style="color:red">RED'],
                     ['bar', 'redProg'],
                     'blank',
@@ -150,10 +149,8 @@ addLayer('c', {
                         ['bar', 'redBuy'],
                         ['blank', '2px'],
                         ['buyables', '1'],
-                    ]],
-                ]],
-                'blank',
-                ['row', [
+                ]]]],
+                'blank', ['row', [
                     ['display-text', '<b class="sidetext" style="color:#ff8800">ORANGE'],
                     ['bar', 'orangeProg'],
                     'blank',
@@ -163,10 +160,8 @@ addLayer('c', {
                         ['bar', 'orangeBuy'],
                         ['blank', '2px'],
                         ['buyables', '2'],
-                    ]],
-                ]],
-                'blank',
-                ['row', [
+                ]]]],
+                'blank', ['row', [
                     ['display-text', function() {
                         if (player.c.colors >= 2) return '<b class="sidetext" style="color:yellow">YELLOW';
                     }],
@@ -178,10 +173,8 @@ addLayer('c', {
                         ['bar', 'yellowBuy'],
                         ['blank', '2px'],
                         ['buyables', '3'],
-                    ]],
-                ]],
-                'blank',
-                ['row', [
+                ]]]],
+                'blank', ['row', [
                     ['display-text', function() {
                         if (player.c.colors >= 3) return '<b class="sidetext" style="color:#99dd00">SLIME';
                     }],
@@ -193,10 +186,8 @@ addLayer('c', {
                         ['bar', 'slimeBuy'],
                         ['blank', '2px'],
                         ['buyables', '4'],
-                    ]],
-                ]],
-                'blank',
-                ['row', [
+                ]]]],
+                'blank', ['row', [
                     ['display-text', function() {
                         if (player.c.colors >= 4) return '<b class="sidetext" style="color:lime">LIME';
                     }],
@@ -208,10 +199,8 @@ addLayer('c', {
                         ['bar', 'limeBuy'],
                         ['blank', '2px'],
                         ['buyables', '5'],
-                    ]],
-                ]],
-                'blank',
-                ['row', [
+                ]]]],
+                'blank', ['row', [
                     ['display-text', function() {
                         if (player.c.colors >= 5) return '<b class="sidetext" style="color:#00ff88">TEAL';
                     }],
@@ -223,16 +212,18 @@ addLayer('c', {
                         ['bar', 'tealBuy'],
                         ['blank', '2px'],
                         ['buyables', '6'],
-                    ]],
-                ]],
+                ]]]],
             ],
+            buttonStyle: {'background':'var(--rainbowline)','background-size':'200%','animation':'3s linear infinite rainbowline, 6s linear infinite rainbowfade, 6s linear -3s infinite rainbowglow','border':'0px'},
         },
         "Upgrades": {
             content: [
                 ['display-text', function() {
                     return 'You have <h2 class="rainbowvalue-text">' + formatWhole(player.c.colors) + '</h2> colors unlocked';
                 }],
+                'upgrades'
             ],
+            buttonStyle: {'background':'var(--rainbowline)','background-size':'200%','animation':'3s linear infinite rainbowline, 6s linear infinite rainbowfade, 6s linear -3s infinite rainbowglow','border':'0px'},
         },
     },
     bars: {
