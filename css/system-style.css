@@ -126,15 +126,15 @@ td {
 	position: absolute;
 	overflow-y: auto;
 	overflow-x: auto;
-	transition-duration: 0s
+	transition-duration: 0s;
 }
 
 .instant {
-	transition-duration: 0s !important
+	transition-duration: 0s !important;
 }
 
 .fast {
-	transition:color none
+	transition: color none;
 }
 
 .col.right {
@@ -190,8 +190,8 @@ ul {
 }
 
 .treeOverlay {
-	pointer-events:none;
-	overflow:hidden;
+	pointer-events: none;
+	overflow: hidden;
 }
 
 .front {
@@ -200,12 +200,12 @@ ul {
 
 .overlayThing {
 	z-index: 10000;
-	pointer-events:auto;
+	pointer-events: auto;
 }
 
 .sideLayers {
 	z-index: 10000;
-	pointer-events:auto;
+	pointer-events: auto;
 	position: absolute;
 	right: 55px;
 	top: 65px;
@@ -213,7 +213,7 @@ ul {
 }
 
 button > * {
-	pointer-events:none;
+	pointer-events: none;
 }
 
 .ghost {
