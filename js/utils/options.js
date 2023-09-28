@@ -17,19 +17,20 @@ function getStartOptions() { return {
 }};
 
 function toggleOpt(name) {
+	// toggle option
 	options[name] = !options[name];
-	if (name == 'hqTree')
-		changeTreeQuality();
+	// special
+	if (name == 'hqTree') changeTreeQuality();
+	// update canvas
+	if (name == 'forceOneTab' || name == 'forceTooltips') needsCanvasUpdate = true;
 };
-
-var styleCooldown = 0;
 
 function changeTreeQuality() {
 	var on = options.hqTree;
-	document.body.style.setProperty('--hqProperty1',on?'2px solid':'4px solid');
-	document.body.style.setProperty('--hqProperty2a',on?'-4px -4px 4px #00000040 inset':'-4px -4px 4px #00000000 inset');
-	document.body.style.setProperty('--hqProperty2b',on?'0px 0px 20px var(--background)':'');
-	document.body.style.setProperty('--hqProperty3',on?'2px 2px 4px #00000040':'none');
+	document.body.style.setProperty('--hqProperty1', on ? '2px solid' : '4px solid');
+	document.body.style.setProperty('--hqProperty2a', on ? '-4px -4px 4px #00000040 inset' : '-4px -4px 4px #00000000 inset');
+	document.body.style.setProperty('--hqProperty2b', on ? '0px 0px 20px var(--background)' : '');
+	document.body.style.setProperty('--hqProperty3', on ? '2px 2px 4px #00000040' : 'none');
 };
 
 function toggleAuto(toggle) {
@@ -46,11 +47,11 @@ const NF_DISPLAYS = ['illions (modern)', 'scientific (num e num)'];
 const NF_SETTINGS = ['illionUS', 'e'];
 
 function adjustMSDisp() {
-	options.msDisplay = MS_SETTINGS[(MS_SETTINGS.indexOf(options.msDisplay) + 1) % 5];
+	options.msDisplay = MS_SETTINGS[(MS_SETTINGS.indexOf(options.msDisplay) + 1) % MS_SETTINGS.length];
 };
 
 function adjustNFDisp() {
-	options.nfDisplay = NF_SETTINGS[(NF_SETTINGS.indexOf(options.nfDisplay) + 1) % 2];
+	options.nfDisplay = NF_SETTINGS[(NF_SETTINGS.indexOf(options.nfDisplay) + 1) % NF_SETTINGS.length];
 };
 
 function milestoneShown(layer, id) {

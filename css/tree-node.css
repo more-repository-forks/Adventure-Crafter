@@ -43,12 +43,6 @@
 	font-size: 40px;
 }
 
-.noneNode {
-	height: 0px;
-	width: 0px;
-	border: 0px transparent;
-}
-
 .resetNotify {
 	box-shadow: var(--hqProperty2a), 0 0 8px #ffffff;
 }
