@@ -4,14 +4,14 @@ let modInfo = {
 	author: 'Yrahcaz7',
 	pointsName: 'coins',
 	modFiles: ['layers.js', 'technical/tree.js'],
-	initialStartPoints: new Decimal(0),
+	initialStartPoints: new Decimal(1),
 	offlineLimit: 1, // In hours
 	allowSmall: true,
 };
 
 const VERSION = {
-	num: '3.0',
-	name: 'The Reset',
+	num: '4.0',
+	name: 'New Beginning',
 };
 
 let winText = '<h3>You won the game!</h3><br>However, it isn\'t the end yet...<br>Wait for more updates for further content.';

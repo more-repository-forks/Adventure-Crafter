@@ -2,47 +2,60 @@ const COLORS = [{
 	name: "red",
 	hex: "#ff0000",
 	costBase: 0,
-	earnings: 4,
+	earnings: 5,
 	time: 3,
 }, {
 	name: "orange",
 	hex: "#ff8800",
 	costBase: 32,
-	earnings: 412.5,
+	earnings: 500,
 	time: 6,
 }, {
 	name: "yellow",
 	hex: "#ffff00",
 	dark: true,
 	costBase: 64,
-	earnings: 17500,
+	earnings: 25000,
 	time: 12,
 }, {
-	name: "slime",
+	name: "lime",
 	hex: "#88ff00",
 	dark: true,
 	costBase: 96,
-	earnings: 1.25e6,
+	earnings: 2.5e6,
 	time: 24,
 }, {
-	name: "lime",
+	name: "green",
 	hex: "#00ff00",
 	dark: true,
 	costBase: 128,
 	earnings: 500e6,
 	time: 48,
 }, {
-	name: "teal",
+	name: "clover",
 	hex: "#00ff88",
 	dark: true,
-	costBase: 160,
-	earnings: 75e9,
-	time: 72,
-}];
+	costBase: 164,
+	earnings: 50e9,
+	time: 96,
+}, {
+	name: "cyan",
+	hex: "#00ffff",
+	dark: true,
+	costBase: 200,
+	earnings: 5e12,
+	time: 192,
+}]; // future colors: azure, blue, violet, fuchsia, magenta
 
 function getColorTabContent() {
-	let content = [["display-text", "You have <h2 class='rainbowvalue-text'>" + formatWhole(player.c.colors) + "</h2> colors unlocked"],
-	"clickables"];
+	let content = [["display-text", "You have <h2 class='rainbowvalue-text'>" + formatWhole(player.c.colors) + "</h2> colors unlocked"]];
+	if (tmp.c.clickables[11].unlocked) {
+		content.push("blank");
+		content.push("clickables");
+		content.push("blank");
+	} else {
+		content.push("blank");
+	};
 	for (let index = 0; index <= player.c.colors && index < COLORS.length; index++) {
 		const NAME = COLORS[index].name;
 		content.push(["row", [
@@ -71,8 +84,8 @@ function getColorBars() {
 			direction: RIGHT,
 			width: 300,
 			height: 50,
-			progress() { return player.c[NAME + "Time"] },
-			display() { if (getBuyableAmount("c", BUYNUM).gt(0)) return "coins/cycle: " + illionFormat(player.c[NAME + "Earn"]) },
+			progress() { return player.c.time[NAME] || 0 },
+			display() { if (getBuyableAmount("c", BUYNUM).gt(0)) return "coins/cycle: " + illionFormat(player.c.earnings[NAME]) },
 			fillStyle: {"background-color": HEX},
 			borderStyle: {"border-color": HEX},
 			style: {"color": (COLORS[index].dark ? "#999999" : "#ffffff")},
@@ -106,6 +119,7 @@ function getColorBars() {
 				else if (AMOUNT.lt(25)) goal = 25;
 				else if (AMOUNT.lt(50)) goal = 50;
 				else if (AMOUNT.lt(100)) goal = 100;
+				else if (AMOUNT.lt(150)) goal = 150;
 				else goal = 200;
 				return AMOUNT.div(goal);
 			},
@@ -130,10 +144,9 @@ function getColorBuyables() {
 		buyables[BUYNUM] = {
 			cost() {
 				let x = getBuyableAmount("c", BUYNUM).add(COLORS[index].costBase);
-				if (x.eq(0)) return new Decimal(0);
 				let divnum = new Decimal(1);
-				if (getGridData("m", DIVNUM) > 0) divnum = divnum.mul(getGridData("m", DIVNUM));
-				return new Decimal(1).add(x.mul(0.8)).add(new Decimal(1.2).pow(x)).div(divnum);
+				if (getGridData("m", DIVNUM)) divnum = divnum.mul(getGridData("m", DIVNUM));
+				return x.div(2).pow(2).add(new Decimal(1.32).pow(x.pow(0.9))).div(divnum);
 			},
 			canAfford() { return player.points.gte(this.cost()) && getBuyableAmount("c", BUYNUM).lt(this.purchaseLimit) },
 			purchaseLimit: 200,
@@ -159,19 +172,10 @@ addLayer("c", {
 	position: 0,
 	startData() { return {
 		unlocked: true,
-		colors: 1,
-		redTime: new Decimal(0),
-		redEarn: new Decimal(4),
-		orangeTime: new Decimal(0),
-		orangeEarn: new Decimal(0),
-		yellowTime: new Decimal(0),
-		yellowEarn: new Decimal(0),
-		slimeTime: new Decimal(0),
-		slimeEarn: new Decimal(0),
-		limeTime: new Decimal(0),
-		limeEarn: new Decimal(0),
-		tealTime: new Decimal(0),
-		tealEarn: new Decimal(0),
+		colors: 0,
+		colorBest: 0,
+		earnings: [],
+		time: [],
 	}},
 	color: "white",
 	tooltip() { return formatWhole(player.c.colors) + " colors" },
@@ -179,7 +183,10 @@ addLayer("c", {
 	layerShown() { return true },
 	doReset(resettingLayer) {
 		let keep = [];
+		if (resettingLayer == "m") keep.push("colorBest");
 		if (layers[resettingLayer].row > this.row) layerDataReset("c", keep);
+		player.c.earnings = [];
+		player.c.time = [];
 	},
 	update(diff) {
 		// update unlocks
@@ -190,25 +197,30 @@ addLayer("c", {
 		else if (getBuyableAmount("c", 21).gt(0)) player.c.colors = 2;
 		else if (getBuyableAmount("c", 11).gt(0)) player.c.colors = 1;
 		else player.c.colors = 0;
+		// update best
+		if (player.c.colors > player.c.colorBest) player.c.colorBest = player.c.colors;
 		// calculate earnings
-		for (let index = 0; index < COLORS.length; index++) {
+		for (let index = 0; index < player.c.colors; index++) {
 			const NAME = COLORS[index].name;
 			const BUYNUM = (index + 1) * 10 + 1;
 			const MULTNUM = 102 + index;
 			let earnings = getBuyableAmount("c", BUYNUM).mul(COLORS[index].earnings);
-			if (getBuyableAmount("c", BUYNUM).gte(10)) earnings = earnings.mul(3);
-			if (getBuyableAmount("c", BUYNUM).gte(25)) earnings = earnings.mul(6);
-			if (getBuyableAmount("c", BUYNUM).gte(50)) earnings = earnings.mul(9);
-			if (getBuyableAmount("c", BUYNUM).gte(100)) earnings = earnings.mul(25);
-			if (getGridData("m", MULTNUM) > 0) earnings = earnings.mul(getGridData("m", MULTNUM));
-			player.c[NAME + "Earn"] = earnings;
+			if (getBuyableAmount("c", BUYNUM).gte(10)) earnings = earnings.mul(2.5);
+			if (getBuyableAmount("c", BUYNUM).gte(25)) earnings = earnings.mul(5);
+			if (getBuyableAmount("c", BUYNUM).gte(50)) earnings = earnings.mul(10);
+			if (getBuyableAmount("c", BUYNUM).gte(100)) earnings = earnings.mul(50);
+			if (getBuyableAmount("c", BUYNUM).gte(150)) earnings = earnings.mul(250);
+			if (getGridData("m", MULTNUM)) earnings = earnings.mul(getGridData("m", MULTNUM));
+			player.c.earnings[NAME] = earnings;
 		};
 		// earn
 		for (let index = 0; index < player.c.colors; index++) {
 			const NAME = COLORS[index].name;
-			if (player.c[NAME + "Time"].gt(1)) {
-				player.points = player.points.add(player.c[NAME + "Earn"]);
-				player.c[NAME + "Time"] = new Decimal(0);
+			if (!player.c.time[NAME]) {
+				player.c.time[NAME] = new Decimal(0);
+			} else if (player.c.time[NAME].gt(1)) {
+				player.points = player.points.add(player.c.earnings[NAME]);
+				player.c.time[NAME] = new Decimal(0);
 			};
 		};
 		// add time
@@ -216,8 +228,8 @@ addLayer("c", {
 			const NAME = COLORS[index].name;
 			const MULTNUM = 202 + index;
 			let speed = new Decimal(diff);
-			if (getGridData("m", MULTNUM) > 0) speed = speed.mul(getGridData("m", MULTNUM));
-			player.c[NAME + "Time"] = player.c[NAME + "Time"].add(speed.div(COLORS[index].time));
+			if (getGridData("m", MULTNUM)) speed = speed.mul(getGridData("m", MULTNUM));
+			player.c.time[NAME] = player.c.time[NAME].add(speed.div(COLORS[index].time));
 		};
 	},
 	tabFormat: {
@@ -231,13 +243,7 @@ addLayer("c", {
 					return "You have <h2 class='rainbowvalue-text'>" + formatWhole(player.c.colors) + "</h2> colors unlocked";
 				}],
 				"blank",
-				"h-line",
-				"blank",
-				["display-text", "<h2>Bulk Buying"],
-				"blank",
-				"h-line",
-				"blank",
-				["upgrades", "1"],
+				"upgrades",
 			],
 			buttonClass: 'rainbowvalue-text',
 		},
@@ -292,7 +298,6 @@ addLayer("m", {
 	startData() { return {
 		unlocked: false,
 		points: new Decimal(0),
-		bestcolors: 1,
 	}},
 	color: "slategray",
 	resource: "total multiplier",
@@ -303,7 +308,7 @@ addLayer("m", {
 	type: "custom",
 	getResetGain(x = 0) {
 		let num = player.c.colors + x;
-		let earnings = [0, 0, 0, 0, 2, 5, 36];
+		let earnings = [0, 0, 0, 0, 2, 5, 25, 100];
 		if (num >= earnings.length) return new Decimal(earnings[earnings.length - 1]);
 		else return new Decimal(earnings[num]);
 	},
@@ -322,30 +327,27 @@ addLayer("m", {
 	onPrestige(gain) {
 		if (gain === undefined || gain === null || gain === NaN || gain === Infinity) return;
 		gain = new Decimal(gain);
-		let color = getRandomInt(1, player.m.bestcolors);
+		let color = getRandomInt(1, player.c.colorBest);
 		let type = getRandomInt(1, 3);
 		let id = type * 100 + color + 1;
-		setGridData("m", id, gain.add(getGridData("m", id)).toNumber());
+		setGridData("m", id, gain.add(getGridData("m", id)));
 	},
 	layerShown() { return true },
 	marked: "moon",
-	update(diff) {
-		if (player.c.colors > player.m.bestcolors) player.m.bestcolors = player.c.colors;
-	},
 	tabFormat: [
 		"main-display",
 		"prestige-button",
 		["custom-resource-display", function() {
-			return "You have " + player.c.colors + " colors<br>Your best colors is " + player.m.bestcolors;
+			return "You have " + player.c.colors + " colors<br>Your best colors is " + player.c.colorBest;
 		}],
 		"blank",
 		"grid",
 	],
 	grid: {
 		rows: 3,
-		cols() { return player.m.bestcolors + 1 },
-		maxCols: 11,
-		getStartData(id) { return 0 },
+		cols() { return player.c.colorBest + 1 },
+		maxCols: COLORS.length + 1,
+		getStartData(id) {},
 		getUnlocked(id) { return true },
 		getStyle(data, id) {
 			const INDEX = id % 100 - 2;
