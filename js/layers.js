@@ -43,9 +43,15 @@ const COLORS = [{
 	hex: "#00ffff",
 	dark: true,
 	costBase: 200,
-	earnings: 5e12,
+	earnings: 2.5e12,
 	time: 192,
-}]; // future colors: azure, blue, violet, fuchsia, magenta
+}, {
+	name: "azure",
+	hex: "#0088ff",
+	costBase: 250,
+	earnings: 500e12,
+	time: 384,
+}]; // future colors: blue, violet, fuchsia, magenta
 
 function registerColorCost(index, bulk) {
 	const BUYNUM = (index + 1) * 10 + 1;
@@ -153,7 +159,8 @@ function getColorBars() {
 				else if (AMOUNT.lt(50)) goal = 50;
 				else if (AMOUNT.lt(100)) goal = 100;
 				else if (AMOUNT.lt(150)) goal = 150;
-				else goal = 200;
+				else if (AMOUNT.lt(200)) goal = 200;
+				else goal = 250;
 				return AMOUNT.div(goal);
 			},
 			display() {
@@ -185,8 +192,7 @@ function getColorBuyables() {
 				if (getClickableState("c", 11) == "5x") return 5;
 				else return 1;
 			},
-			canAfford() { return player.points.gte(getColorCost(index)) && getBuyableAmount("c", BUYNUM).lt(this.purchaseLimit) },
-			purchaseLimit: 200,
+			canAfford() { return player.points.gte(getColorCost(index)) },
 			buy() {
 				player.points = player.points.sub(getColorCost(index));
 				addBuyables("c", BUYNUM, getColorBulk());
@@ -228,7 +234,9 @@ addLayer("c", {
 	},
 	update(diff) {
 		// update unlocks
-		if (getBuyableAmount("c", 61).gt(0)) player.c.colors = 6;
+		if (getBuyableAmount("c", 81).gt(0)) player.c.colors = 8;
+		else if (getBuyableAmount("c", 71).gt(0)) player.c.colors = 7;
+		else if (getBuyableAmount("c", 61).gt(0)) player.c.colors = 6;
 		else if (getBuyableAmount("c", 51).gt(0)) player.c.colors = 5;
 		else if (getBuyableAmount("c", 41).gt(0)) player.c.colors = 4;
 		else if (getBuyableAmount("c", 31).gt(0)) player.c.colors = 3;
@@ -247,7 +255,9 @@ addLayer("c", {
 			if (getBuyableAmount("c", BUYNUM).gte(25)) earnings = earnings.mul(5);
 			if (getBuyableAmount("c", BUYNUM).gte(50)) earnings = earnings.mul(10);
 			if (getBuyableAmount("c", BUYNUM).gte(100)) earnings = earnings.mul(50);
-			if (getBuyableAmount("c", BUYNUM).gte(150)) earnings = earnings.mul(250);
+			if (getBuyableAmount("c", BUYNUM).gte(150)) earnings = earnings.mul(200);
+			if (getBuyableAmount("c", BUYNUM).gte(200)) earnings = earnings.mul(200);
+			if (getBuyableAmount("c", BUYNUM).gte(250)) earnings = earnings.mul(200);
 			if (getGridData("m", MULTNUM)) earnings = earnings.mul(getGridData("m", MULTNUM));
 			player.c.earnings[NAME] = earnings;
 		};
@@ -348,7 +358,7 @@ addLayer("m", {
 	type: "custom",
 	getResetGain(x = 0) {
 		let num = player.c.colors + x;
-		let earnings = [0, 0, 0, 0, 2, 5, 25, 100];
+		let earnings = [0, 0, 0, 0, 2, 4, 8, 16, 32, 64];
 		if (num >= earnings.length) return new Decimal(earnings[earnings.length - 1]);
 		else return new Decimal(earnings[num]);
 	},
@@ -403,7 +413,7 @@ addLayer("m", {
 			if (id == 101) return "<h3>power";
 			if (id == 201) return "<h3>speed";
 			if (id == 301) return "<h3>cost";
-			if (data == 0) return "<h3>N/A";
+			if (!data) return "<h3>N/A";
 			return "<h3>" + illionFormat(data, true, 0);
 		},
 		getTooltip(data, id) {
