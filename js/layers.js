@@ -47,6 +47,39 @@ const COLORS = [{
 	time: 192,
 }]; // future colors: azure, blue, violet, fuchsia, magenta
 
+function registerColorCost(index, bulk) {
+	const BUYNUM = (index + 1) * 10 + 1;
+	const AMOUNT = getBuyableAmount("c", BUYNUM);
+	let bulkCost = new Decimal(tmp.c.buyables[BUYNUM].cost || layers.c.buyables[BUYNUM].cost());
+	for (let num = 1; num < bulk; num++) {
+		bulkCost = bulkCost.add(layers.c.buyables[BUYNUM].cost(AMOUNT.add(num)));
+	};
+	COLORS[index].bulkLocation = AMOUNT;
+	COLORS[index].bulkCost[bulk] = bulkCost;
+};
+
+function getColorBulk() {
+	if (getClickableState("c", 11) == "5x") return 5;
+	else return 1;
+};
+
+function getColorCost(index) {
+	const BUYNUM = (index + 1) * 10 + 1;
+	const AMOUNT = getBuyableAmount("c", BUYNUM);
+	const BULK = getColorBulk();
+	if (BULK === 1) {
+		return tmp.c.buyables[BUYNUM].cost || layers.c.buyables[BUYNUM].cost();
+	} else {
+		if (COLORS[index].bulkLocation !== AMOUNT || !COLORS[index].bulkCost) {
+			COLORS[index].bulkCost = {};
+		};
+		if (!COLORS[index].bulkCost[BULK]) {
+			registerColorCost(index, BULK);
+		};
+		return COLORS[index].bulkCost[BULK];
+	};
+};
+
 function getColorTabContent() {
 	let content = [["display-text", "You have <h2 class='rainbowvalue-text'>" + formatWhole(player.c.colors) + "</h2> colors unlocked"]];
 	if (tmp.c.clickables[11].unlocked) {
@@ -85,7 +118,7 @@ function getColorBars() {
 			width: 300,
 			height: 50,
 			progress() { return player.c.time[NAME] || 0 },
-			display() { if (getBuyableAmount("c", BUYNUM).gt(0)) return "coins/cycle: " + illionFormat(player.c.earnings[NAME]) },
+			display() { if (getBuyableAmount("c", BUYNUM).gt(0) && player.c.earnings[NAME]) return "coins/cycle: " + illionFormat(player.c.earnings[NAME]) },
 			fillStyle: {"background-color": HEX},
 			borderStyle: {"border-color": HEX},
 			style: {"color": (COLORS[index].dark ? "#999999" : "#ffffff")},
@@ -96,7 +129,7 @@ function getColorBars() {
 			width: 171,
 			height: 21,
 			progress() {
-				const COST = layers.c.buyables[BUYNUM].cost();
+				const COST = getColorCost(index);
 				if (COST.eq(0)) return new Decimal(1);
 				else return player.points.div(COST);
 			},
@@ -142,21 +175,26 @@ function getColorBuyables() {
 		const BUYNUM = (index + 1) * 10 + 1;
 		const DIVNUM = 302 + index;
 		buyables[BUYNUM] = {
-			cost() {
-				let x = getBuyableAmount("c", BUYNUM).add(COLORS[index].costBase);
+			cost(x) {
+				let amt = new Decimal(COLORS[index].costBase).add(x);
 				let divnum = new Decimal(1);
 				if (getGridData("m", DIVNUM)) divnum = divnum.mul(getGridData("m", DIVNUM));
-				return x.div(2).pow(2).add(new Decimal(1.32).pow(x.pow(0.9))).div(divnum);
+				return amt.div(2).pow(2).add(new Decimal(1.32).pow(amt.pow(0.9))).div(divnum);
 			},
-			canAfford() { return player.points.gte(this.cost()) && getBuyableAmount("c", BUYNUM).lt(this.purchaseLimit) },
+			bulkBuy() {
+				if (getClickableState("c", 11) == "5x") return 5;
+				else return 1;
+			},
+			canAfford() { return player.points.gte(getColorCost(index)) && getBuyableAmount("c", BUYNUM).lt(this.purchaseLimit) },
 			purchaseLimit: 200,
 			buy() {
-				player.points = player.points.sub(this.cost());
-				addBuyables("c", BUYNUM, 1);
+				player.points = player.points.sub(getColorCost(index));
+				addBuyables("c", BUYNUM, getColorBulk());
 			},
 			display() {
-				if (getBuyableAmount("c", BUYNUM).eq(0)) return "<h3 style='color:" + HEX + "'>Unlock: " + illionFormat(this.cost(), true) + " coins";
-				else return "<h3 style='color:" + HEX + "'>Cost: " + illionFormat(this.cost(), true) + " coins";
+				let buyText = "Cost";
+				if (getBuyableAmount("c", BUYNUM).eq(0) && getColorBulk() === 1) buyText = "Unlock";
+				return "<h3 style='color:" + HEX + "'>" + buyText + ": " + illionFormat(getColorCost(index), true) + " coins";
 			},
 			style: {"background-color": (COLORS[index].dark ? "#999999" : "#ffffff")},
 			unlocked() { return player.c.colors >= index },
@@ -167,7 +205,7 @@ function getColorBuyables() {
 
 addLayer("c", {
 	name: "Colors",
-	symbol: "<span class='rainbowline-backround noborder'></span>",
+	symbol: "<span class='rainbowline-backround'></span>",
 	noborder: true,
 	position: 0,
 	startData() { return {
@@ -177,7 +215,7 @@ addLayer("c", {
 		earnings: [],
 		time: [],
 	}},
-	color: "white",
+	color: "#ffffff",
 	tooltip() { return formatWhole(player.c.colors) + " colors" },
 	row: 0,
 	layerShown() { return true },
@@ -249,19 +287,22 @@ addLayer("c", {
 		},
 	},
 	componentStyles: {
-		"buyable"() {return {"border-radius": "10px", "height": "25px", "width": "175px", "z-index": "99"}},
+		"buyable"() { return {"height": "25px", "width": "175px", "border-radius": "10px", "z-index": "99"} },
 	},
 	bars: getColorBars(),
 	buyables: getColorBuyables(),
 	clickables: {
 		11: {
 			display() {
-				if (!getClickableState("c", 11)) return "<h2>Buy 1x";
-				else return "<h2>Buy " + getClickableState("c", 11);
+				if (!getClickableState("c", 11)) return "<h2>Buying 1x";
+				else return "<h2>Buying " + getClickableState("c", 11);
 			},
 			style: {"min-height": "40px", "border-radius": "20px"},
 			canClick() { return true },
 			onClick() {
+				if (!getClickableState("c", 11) == "1x") {
+					setClickableState("c", 11, "1x");
+				};
 				if (getClickableState("c", 11) == "1x") {
 					setClickableState("c", 11, "5x");
 				} else {
@@ -273,11 +314,11 @@ addLayer("c", {
 	},
 	upgrades: {
 		11: {
-			fullDisplay() { return "<h3>Quintuple Purchase</h3><br>unlocks the buy 5x option (which doesn't work yet)<br><br>Cost: " + illionFormat(this.coinCost) + " coins" },
+			fullDisplay() { return "<h3>Quintuple Purchase</h3><br>unlocks the bulk buy 5x option<br><br>Cost: " + illionFormat(this.coinCost) + " coins" },
 			canAfford() { return player.points.gte(this.coinCost) },
 			coinCost: 1e6,
 			pay() { player.points = player.points.sub(this.coinCost) },
-			style() { if (this.canAfford() && !hasUpgrade("c", 11)) return {
+			style() { if (this.canAfford() && !hasUpgrade("c", this.id)) return {
 				"background": "var(--rainbowline)",
 				"background-size": "200%",
 				"animation": "3s linear infinite rainbowline",
@@ -300,11 +341,10 @@ addLayer("m", {
 		points: new Decimal(0),
 	}},
 	color: "slategray",
+	requires: 4,
 	resource: "total multiplier",
-	row: 2,
 	baseResource: "colors",
 	baseAmount() { return new Decimal(player.c.colors) },
-	requires: 4,
 	type: "custom",
 	getResetGain(x = 0) {
 		let num = player.c.colors + x;
@@ -325,13 +365,17 @@ addLayer("m", {
 		else return text + "+<b>" + illionFormat(tmp.m.resetGain, false, 0) + "</b> multiplier<br><br>You will gain " + illionFormat(this.getResetGain(1) - this.getResetGain(), true, 0) + " more at " + illionFormat(tmp.m.nextAt, true, 0) + " colors";
 	},
 	onPrestige(gain) {
-		if (gain === undefined || gain === null || gain === NaN || gain === Infinity) return;
-		gain = new Decimal(gain);
 		let color = getRandomInt(1, player.c.colorBest);
 		let type = getRandomInt(1, 3);
 		let id = type * 100 + color + 1;
 		setGridData("m", id, gain.add(getGridData("m", id)));
 	},
+	row: 2,
+	hotkeys: [{
+		key: "M",
+		description: "Shift+M: Reset for multiplier",
+		onPress() { if (player.m.unlocked) doReset("m") },
+	}],
 	layerShown() { return true },
 	marked: "moon",
 	tabFormat: [

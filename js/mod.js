@@ -1,21 +1,22 @@
 let modInfo = {
-	name: 'Color Factory',
-	id: 'Yrahcaz7-ModTree-ColorFactory',
-	author: 'Yrahcaz7',
-	pointsName: 'coins',
-	modFiles: ['layers.js', 'technical/tree.js'],
+	name: "Color Factory",
+	id: "Yrahcaz7-ModTree-ColorFactory",
+	author: "Yrahcaz7",
+	pointsName: "coins",
+	modFiles: ["layers.js", "technical/tree.js"],
 	initialStartPoints: new Decimal(1),
 	offlineLimit: 1, // In hours
 	allowSmall: true,
 };
 
 const VERSION = {
-	num: '4.0',
-	name: 'New Beginning',
+	num: "4.1",
+	name: "The Greatest QOL Update",
 };
 
-let winText = '<h3>You won the game!</h3><br>However, it isn\'t the end yet...<br>Wait for more updates for further content.';
+let winText = "<h3>You won the game!</h3><br>However, it isn't the end yet...<br>Wait for more updates for further content.";
 
+// returns a random integer in the interval [min, max)
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
