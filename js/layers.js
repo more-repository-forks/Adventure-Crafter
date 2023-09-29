@@ -310,7 +310,7 @@ addLayer("c", {
 			style: {"min-height": "40px", "border-radius": "20px"},
 			canClick() { return true },
 			onClick() {
-				if (!getClickableState("c", 11) == "1x") {
+				if (!getClickableState("c", 11)) {
 					setClickableState("c", 11, "1x");
 				};
 				if (getClickableState("c", 11) == "1x") {
@@ -349,6 +349,7 @@ addLayer("m", {
 	startData() { return {
 		unlocked: false,
 		points: new Decimal(0),
+		type: -1,
 	}},
 	color: "slategray",
 	requires: 4,
@@ -371,11 +372,12 @@ addLayer("m", {
 	prestigeButtonText() {
 		let text = "";
 		if (player.m.points.lt(1e3)) text += "Reset for ";
-		if (!tmp.m.canReset) return text + "+<b>0</b> multiplier<br><br>You will gain 2 more at 4 colors";
-		else return text + "+<b>" + illionFormat(tmp.m.resetGain, false, 0) + "</b> multiplier<br><br>You will gain " + illionFormat(this.getResetGain(1) - this.getResetGain(), true, 0) + " more at " + illionFormat(tmp.m.nextAt, true, 0) + " colors";
+		const TYPE = (player.m.type >= 0 ? COLORS[player.m.type].name : "random");
+		if (!tmp.m.canReset) return text + "+<b>0</b> " + TYPE + " multiplier<br><br>You will gain 2 more at 4 colors";
+		else return text + "+<b>" + illionFormat(tmp.m.resetGain, false, 0) + "</b> " + TYPE + " multiplier<br><br>You will gain " + illionFormat(this.getResetGain(1) - this.getResetGain(), true, 0) + " more at " + illionFormat(tmp.m.nextAt, true, 0) + " colors";
 	},
 	onPrestige(gain) {
-		let color = getRandomInt(1, player.c.colorBest);
+		let color = (player.m.type >= 0 ? player.m.type + 1 : getRandomInt(1, player.c.colorBest));
 		let type = getRandomInt(1, 3);
 		let id = type * 100 + color + 1;
 		setGridData("m", id, gain.add(getGridData("m", id)));
@@ -395,36 +397,57 @@ addLayer("m", {
 			return "You have " + player.c.colors + " colors<br>Your best colors is " + player.c.colorBest;
 		}],
 		"blank",
-		"grid",
+		["column", [
+			["display-text", "<h2>Multiplier Distribution</h2><br>Click one of the colored buttons at the bottom to select that multiplier color"],
+			["blank", ["5px", "5px"]],
+			"grid",
+		]],
 	],
+	componentStyles: {
+		"column"() { return {"border": "2px solid #ffffff", "border-radius": "20px", "padding": "5px"} },
+	},
 	grid: {
-		rows: 3,
+		rows: 4,
 		cols() { return player.c.colorBest + 1 },
 		maxCols: COLORS.length + 1,
 		getStartData(id) {},
-		getUnlocked(id) { return true },
-		getStyle(data, id) {
-			const INDEX = id % 100 - 2;
-			return {"width": "60px", "height": "60px", "color": (INDEX >= 0 ? COLORS[INDEX].hex : "#000000")};
-		},
-		getCanClick(data, id) { return id % 100 == 1 || data > 0 },
-		onClick(data, id) { return },
 		getDisplay(data, id) {
 			if (id == 101) return "<h3>power";
 			if (id == 201) return "<h3>speed";
 			if (id == 301) return "<h3>cost";
+			if (id == 401) return "<h3>RANDOM";
+			if (id > 401) return "<h3>" + COLORS[id % 100 - 2].name.toUpperCase();
 			if (!data) return "<h3>N/A";
 			return "<h3>" + illionFormat(data, true, 0);
+		},
+		getStyle(data, id) {
+			const INDEX = id % 100 - 2;
+			return {
+				"width": "60px",
+				"height": (id >= 401 ? "30px" : "60px"),
+				"border-color": (id >= 401 ? (INDEX >= 0 ? COLORS[INDEX].hex : "#999999") : "#00000020"),
+				"border-radius": "10px",
+				"background-color": (INDEX >= 0 ? (COLORS[INDEX].dark ? "#999999" : "#ffffff") : "#ffffff"),
+				"color": (INDEX >= 0 ? COLORS[INDEX].hex : "#000000"),
+			};
+		},
+		getCanClick(data, id) { return id >= 401 },
+		overrideNeedLayerUnlocked: true,
+		onClick(data, id) {
+			const INDEX = id % 100 - 2;
+			player.m.type = INDEX;
 		},
 		getTooltip(data, id) {
 			if (id == 101) return "this row multiplies power";
 			if (id == 201) return "this row multiplies speed";
 			if (id == 301) return "this row divides cost";
+			if (id == 401) return "click to choose a random color";
+			const INDEX = id % 100 - 2;
+			if (id > 401) return "click to choose " + COLORS[INDEX].name;
 			let tooltip = "this ";
 			if (id < 200) tooltip += "multiplies power";
 			else if (id < 300) tooltip += "multiplies speed";
 			else if (id < 400) tooltip += "divides cost";
-			const INDEX = id % 100 - 2;
 			return tooltip + " of " + (COLORS[INDEX] ? COLORS[INDEX].name : "N/A");
 		},
 	},

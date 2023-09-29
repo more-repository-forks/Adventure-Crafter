@@ -11,16 +11,16 @@ function respecBuyables(layer) {
 
 function canAffordUpgrade(layer, id) {
 	let upg = tmp[layer].upgrades[id];
-	if(tmp[layer].deactivated) return false;
-	if (tmp[layer].upgrades[id].canAfford === false) return false;
-	let cost = tmp[layer].upgrades[id].cost;
+	if (tmp[layer].deactivated) return false;
+	if (upg.canAfford === false) return false;
+	let cost = upg.cost;
 	if (cost !== undefined) return canAffordPurchase(layer, upg, cost);
 	return true;
 };
 
 function canBuyBuyable(layer, id) {
-	let b = temp[layer].buyables[id];
-	return (b.unlocked && run(b.canAfford, b) && player[layer].buyables[id].lt(b.purchaseLimit) && !tmp[layer].deactivated);
+	let b = tmp[layer].buyables[id];
+	return ((b.unlocked || tmp[layer].buyables.overrideNeedLayerUnlocked) && run(b.canAfford, b) && player[layer].buyables[id].lt(b.purchaseLimit) && !tmp[layer].deactivated);
 };
 
 function canAffordPurchase(layer, thing, cost) {
@@ -46,7 +46,7 @@ function buyUpgrade(layer, id) {
 function buyUpg(layer, id) {
 	if (!tmp[layer].upgrades || !tmp[layer].upgrades[id]) return;
 	let upg = tmp[layer].upgrades[id];
-	if (!player[layer].unlocked || player[layer].deactivated) return;
+	if ((!player[layer].unlocked && !tmp[layer].upgrades.overrideNeedLayerUnlocked) || tmp[layer].deactivated) return;
 	if (!tmp[layer].upgrades[id].unlocked) return;
 	if (player[layer].upgrades.includes(id)) return;
 	if (upg.canAfford === false) return;
@@ -80,7 +80,7 @@ function buyUpg(layer, id) {
 };
 
 function buyMaxBuyable(layer, id) {
-	if (!player[layer].unlocked) return;
+	if ((!player[layer].unlocked && !tmp[layer].buyables.overrideNeedLayerUnlocked) || tmp[layer].deactivated) return;
 	if (!tmp[layer].buyables[id].unlocked) return;
 	if (!tmp[layer].buyables[id].canBuy) return;
 	if (!layers[layer].buyables[id].buyMax) return;
@@ -89,7 +89,7 @@ function buyMaxBuyable(layer, id) {
 };
 
 function buyBuyable(layer, id) {
-	if (!player[layer].unlocked) return;
+	if ((!player[layer].unlocked && !tmp[layer].buyables.overrideNeedLayerUnlocked) || tmp[layer].deactivated) return;
 	if (!tmp[layer].buyables[id].unlocked) return;
 	if (!tmp[layer].buyables[id].canBuy) return;
 	run(layers[layer].buyables[id].buy, layers[layer].buyables[id]);
@@ -97,7 +97,7 @@ function buyBuyable(layer, id) {
 };
 
 function clickClickable(layer, id) {
-	if (!player[layer].unlocked || tmp[layer].deactivated) return;
+	if ((!player[layer].unlocked && !tmp[layer].clickables.overrideNeedLayerUnlocked) || tmp[layer].deactivated) return;
 	if (!tmp[layer].clickables[id].unlocked) return;
 	if (!tmp[layer].clickables[id].canClick) return;
 	run(layers[layer].clickables[id].onClick, layers[layer].clickables[id]);
@@ -105,7 +105,7 @@ function clickClickable(layer, id) {
 };
 
 function clickGrid(layer, id) {
-	if (!player[layer].unlocked  || tmp[layer].deactivated) return;
+	if ((!player[layer].unlocked && !layers[layer].grid.overrideNeedLayerUnlocked) || tmp[layer].deactivated) return;
 	if (!run(layers[layer].grid.getUnlocked, layers[layer].grid, id)) return;
 	if (!gridRun(layer, 'getCanClick', player[layer].grid[id], id)) return;
 	gridRun(layer, 'onClick', player[layer].grid[id], id);
